@@ -1,0 +1,51 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum FlightStatus {
+  SCHEDULED
+  BOARDING
+  DEPARTED
+  ARRIVED
+  DELAYED
+  CANCELLED
+}
+
+enum FlightType {
+  DEPARTURE
+  ARRIVAL
+}
+
+model Terminal {
+  id        String   @id @default(uuid())
+  name      String   @unique // Contoh: "Terminal 3 International"
+  code      String   @unique // Contoh: "T3"
+  flights   Flight[]
+  createdAt DateTime @default(now())
+}
+
+model Flight {
+  id             String       @id @default(uuid())
+  flightNumber   String       @unique // Contoh: "EK-358"
+  airline        String       // Contoh: "Emirates"
+  destination    String       // Contoh: "Dubai (DXB)"
+  origin         String       // Contoh: "Jakarta (CGK)"
+  scheduleTime   DateTime
+  actualTime     DateTime?
+  gate           String
+  status         FlightStatus @default(SCHEDULED)
+  type           FlightType
+  terminalId     String
+  terminal       Terminal     @relation(fields: [terminalId], references: [id], onDelete: Cascade)
+  passengers     Int          @default(0)
+  revenueUsd     Float        @default(0.0)
+  
+  @@index([status])
+  @@index([type])
+  @@index([scheduleTime])
+}
